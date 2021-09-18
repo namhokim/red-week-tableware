@@ -9,10 +9,10 @@ class DishMachine {
         this.plateTypes = ['Ceramic', 'Glass Plates', 'Melamine', 'Stoneware Plates', 'Earthenware Plates', 'Bamboo Plates', 'Paper Plates', 'Disposable Plastic Plates'];
         this.plateStyles = ['Clear Glass Plates', 'Colored Glass Plates', 'Bone China', 'Fine China', 'Traditional Stoneware Plates', 'Creamware']
     }
-    get createDish() {
-        return {id: this.uuidv4(), type: this.types(), style: this.styles()};
+    createDish() {
+        return {id: this.uuidV4(), type: this.types(), style: this.styles()};
     }
-    uuidv4() {
+    uuidV4() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
@@ -34,7 +34,7 @@ const machine = new DishMachine();
 const requestListener = function (req, res) {
     switch (req.url) {
         case '/order/dish':
-            const dish = machine.createDish;
+            const dish = machine.createDish();
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify(dish));
             break;
