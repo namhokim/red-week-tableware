@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "external.tableware.baseUrl",
+      "type": "java.lang.String",
+      "description": "tableware API base URL"
+    }
+  ]
+}
