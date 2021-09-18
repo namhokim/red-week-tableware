@@ -3,11 +3,38 @@ const http = require('http');
 const host = 'localhost';
 const port = 8000;
 
-const dish = {id: 'eb646a86-c948-4b1f-b275-18b9880646eb', type: 'Paper Plates', style: 'Colored Glass Plates'};
+
+class DishMachine {
+    constructor() {
+        this.plateTypes = ['Ceramic', 'Glass Plates', 'Melamine', 'Stoneware Plates', 'Earthenware Plates', 'Bamboo Plates', 'Paper Plates', 'Disposable Plastic Plates'];
+        this.plateStyles = ['Clear Glass Plates', 'Colored Glass Plates', 'Bone China', 'Fine China', 'Traditional Stoneware Plates', 'Creamware']
+    }
+    get createDish() {
+        return {id: this.uuidv4(), type: this.types(), style: this.styles()};
+    }
+    uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+    types() {
+        return this.random(this.plateTypes);
+    }
+    styles() {
+        return this.random(this.plateStyles);
+    }
+    random(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+}
+
+const machine = new DishMachine();
 
 const requestListener = function (req, res) {
     switch (req.url) {
         case '/order/dish':
+            const dish = machine.createDish;
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify(dish));
             break;
