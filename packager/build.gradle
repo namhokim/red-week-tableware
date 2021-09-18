@@ -24,6 +24,7 @@ dependencies {
 	implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
 	implementation 'io.github.wimdeblauwe:error-handling-spring-boot-starter:1.6.0'
 	implementation 'jakarta.validation:jakarta.validation-api:2.0.2'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.5'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
