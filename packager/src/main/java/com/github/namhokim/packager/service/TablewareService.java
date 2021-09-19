@@ -4,44 +4,66 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.namhokim.packager.error.ExternalConnectionException;
 import com.github.namhokim.packager.error.ExternalNoResponseException;
 import com.github.namhokim.packager.external.TablewareApi;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.io.Writer;
+import java.util.concurrent.CountDownLatch;
 
+@Slf4j
 @Service
 public class TablewareService {
     private final TablewareApi tablewareApi;
+    private final ObjectMapper objectMapper;
 
-    public TablewareService(
-            @Value("${external.tableware.base-url}") String baseUrl,
-            ObjectMapper mapper) {
+    public TablewareService(@Value("${external.tableware.base-url}") String baseUrl, ObjectMapper objectMapper) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
-                .addConverterFactory(JacksonConverterFactory.create(mapper))
                 .build();
 
         this.tablewareApi = retrofit.create(TablewareApi.class);
+        this.objectMapper = objectMapper;
     }
 
-    public Reader getDishes(Long size) {
+    public CountDownLatch getDishes(Long size, Writer writer) {
+        final CountDownLatch latch = new CountDownLatch(1);
+
         final Call<ResponseBody> call = tablewareApi.getDishes(size);
-        final Response<ResponseBody> response;
-        try {
-            response = call.execute();
-            final ResponseBody body = response.body();
-            if (body == null) {
-                throw new ExternalNoResponseException("Cannot connect to tableware API");
+        call.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    log.info("onResponse: Start");
+                    final ResponseBody body = response.body();
+                    if (body != null) {
+                        JsonArrayToCsvParser parser = new JsonArrayToCsvParser(objectMapper);
+                        parser.convertJsonArrayToCsv(body.charStream(), writer);
+                    } else {
+                        throw new ExternalNoResponseException("Empty dishes was found.");
+                    }
+                } catch (IOException e) {
+                    log.error("Dishes handling Error", e);
+                } finally {
+                    log.info("onResponse: Done");
+                    latch.countDown();
+                }
             }
-            return body.charStream();
-        } catch (IOException e) {
-            throw new ExternalConnectionException("Cannot connect to tableware API", e);
-        }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable cause) {
+                latch.countDown();
+                throw new ExternalConnectionException("Dishes handling Failure", cause);
+            }
+
+        });
+
+        return latch;
     }
 }

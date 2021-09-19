@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.github.namhokim'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
@@ -21,7 +21,6 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-	implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
 	implementation 'io.github.wimdeblauwe:error-handling-spring-boot-starter:1.6.0'
 	implementation 'jakarta.validation:jakarta.validation-api:2.0.2'
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.12.5'
