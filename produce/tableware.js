@@ -1,4 +1,5 @@
 const http = require('http');
+const {Readable} = require('stream');
 
 const host = 'localhost';
 const port = 8000;
@@ -12,17 +13,17 @@ class DishMachine {
     createDish() {
         return {id: this.uuidV4(), type: this.types(), style: this.styles()};
     }
-    createDishes(size, response) {
-        response.write('[');
+    * generateDishes(size) {
+        yield '[';
         let i;
         for (i = 1; i <= size; i++) {
             let dish = this.createDish();
-            response.write(JSON.stringify(dish));
+            yield JSON.stringify(dish);
             if (i < size) {
-                response.write(",\n");
+                yield ",\n";
             }
         }
-        response.write(']');
+        yield ']';
     }
     uuidV4() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -53,8 +54,8 @@ const requestListener = function (req, res) {
         case (req.url.match(/\/order\/dishes/) || {}).input:
             let dishSize = req.url.match(/\d+/);
             res.writeHead(200, {'Content-Type': 'application/json'});
-            machine.createDishes(dishSize, res);
-            res.end();
+            const dishReadable = Readable.from(machine.generateDishes(dishSize));
+            dishReadable.pipe(res)
             break;
         default:
             res.end();
